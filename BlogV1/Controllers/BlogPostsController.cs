@@ -8,13 +8,14 @@ using System.Web;
 using System.Web.Mvc;
 using BlogV1.Models;
 using BlogV1.helpers;
+using System.IO;
 
 namespace BlogV1.Controllers
 {
     public class BlogPostsController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
-
+        private ImageUploadValidator validator = new ImageUploadValidator();
         // GET: BlogPosts
         public ActionResult Index()
         {
@@ -47,7 +48,7 @@ namespace BlogV1.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Title,Body,MediaURL,Published")] BlogPost blogPost)
+        public ActionResult Create([Bind(Include = "Id,Title,Body,MediaURL,Published")] BlogPost blogPost, HttpPostedFileBase Image)
         {
             if (ModelState.IsValid)
             {
@@ -57,10 +58,21 @@ namespace BlogV1.Controllers
                     ModelState.AddModelError("Title", "Invalid title");
                     return View(blogPost);
                 }
+                if (String.IsNullOrWhiteSpace(blogPost.Body))
+                {
+                    ModelState.AddModelError("Body", "Please write a post!");
+                    return View(blogPost);
+                }
                 if (db.Posts.Any(p => p.Slug == Slug))
                 {
                     ModelState.AddModelError("Title", "The title must be unique");
                     return View(blogPost);
+                }
+                if (validator.IsWebFriendlyImage(Image))
+                {
+                    var fileName = Path.GetFileName(Image.FileName);
+                    Image.SaveAs(Path.Combine(Server.MapPath("~/Images/Uploads/"), fileName));
+                    blogPost.MediaURL = "~/Images/Uploads/" + fileName;
                 }
 
                 blogPost.Slug = Slug;
@@ -94,15 +106,29 @@ namespace BlogV1.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Created,Updated,Title,Slug,Body,MediaURL,Published")] BlogPost blogPost)
+        public ActionResult Edit([Bind(Include = "Id,Created,Updated,Title,Slug,Body,MediaURL,Published")] BlogPost blogPost, HttpPostedFileBase Image)
         {
-            if (ModelState.IsValid)
-            {
-                db.Entry(blogPost).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");             
+                if (ModelState.IsValid)
+                {
+                    var Slug = StringUtilities.URLFriendly(blogPost.Title);
+                    if (String.IsNullOrWhiteSpace(Slug))
+                    {
+                        ModelState.AddModelError("Title", "Invalid title");
+                        return View(blogPost);
+                    }          
+                    if (validator.IsWebFriendlyImage(Image))
+                    {
+                        var fileName = Path.GetFileName(Image.FileName);
+                        Image.SaveAs(Path.Combine(Server.MapPath("~/Images/Uploads/"), fileName));
+                        blogPost.MediaURL = "~/Images/Uploads/" + fileName;
+                    }
+
+                    blogPost.Slug = Slug;
+                    blogPost.Updated = DateTimeOffset.Now;                          
+                    db.Entry(blogPost).State = EntityState.Modified;
+                    db.SaveChanges();
+                    return RedirectToAction("Index");             
             }
-            blogPost.Updated = DateTimeOffset.Now;
             return View(blogPost);
         }
 

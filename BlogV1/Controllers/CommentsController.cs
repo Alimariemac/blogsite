@@ -45,7 +45,9 @@ namespace BlogV1.Controllers
         // GET: Comments/Create
         [Authorize]
         public ActionResult Create()
-        {          
+        {
+            ViewBag.AuthorId = new SelectList(db.Users, "Id", "FirstName");
+            ViewBag.PostId = new SelectList(db.Posts, "Id", "Title");
             return View();
         }
 
@@ -67,6 +69,9 @@ namespace BlogV1.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
+            ViewBag.AuthorId = new SelectList(db.Users, "Id", "FirstName", comment.AuthorId);
+            ViewBag.PostId = new SelectList(db.Posts, "Id", "Title", comment.PostId);
+
             return View(comment);
         }
 
@@ -83,6 +88,9 @@ namespace BlogV1.Controllers
             {
                 return HttpNotFound();
             }
+
+            ViewBag.AuthorId = new SelectList(db.Users, "Id", "FirstName", comment.AuthorId);
+            ViewBag.PostId = new SelectList(db.Posts, "Id", "Title", comment.PostId);
             return View(comment);
         }
 
@@ -100,6 +108,8 @@ namespace BlogV1.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
+            ViewBag.AuthorId = new SelectList(db.Users, "Id", "FirstName", comment.AuthorId);
+            ViewBag.PostId = new SelectList(db.Posts, "Id", "Title", comment.PostId);
             return View(comment);
         }
 

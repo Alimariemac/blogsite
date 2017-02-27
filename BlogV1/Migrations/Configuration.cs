@@ -41,6 +41,7 @@ namespace BlogV1.Migrations
             }
 
             var userId = userManager.FindByEmail("Aliciamaccara@gmail.com").Id;
+            
             userManager.AddToRole(userId, "Admin");
         }
         //  This method will be called after migrating to the latest version.

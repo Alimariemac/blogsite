@@ -53,7 +53,7 @@
             @Html.Raw(item.Body)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.MediaURL)
+            <img src="@Url.Content(item.MediaURL)" class="img-responsive" style="width:200px;">
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Published)

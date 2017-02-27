@@ -51,11 +51,11 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.MediaURL)
+            
         </dt>
-
+        @Html.DisplayNameFor(model => model.MediaURL)
         <dd>
-            @Html.DisplayFor(model => model.MediaURL)
+            <img src="@Url.Content(Model.MediaURL)" class="img-responsive" style="width:200px;">
         </dd>
 
         <dt>
@@ -68,9 +68,24 @@
 
     </dl>
 </div>
-@using (Html.BeginForm("Create", "Comments", new { Id = Model.Id }, FormMethod.Post))
+@using (Html.BeginForm("Create", "Comments", FormMethod.Post))
 
-{@Html.AntiForgeryToken()}
+{   
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="PostId" value="@Model.Id"/>
+    <textarea name="body">
+    </textarea>
+    <input type="submit" value="Add Comment" />
+}
+
+@foreach (var comment in Model.Comments)
+{
+    <ul>
+        <li>Posted by @Html.DisplayFor(modelItem => comment.Author.FirstName) @Html.DisplayFor(modelItem => comment.Author.LastName) at @comment.Created</li>
+        <li>@comment.Body</li>
+    </ul>
+
+}
 
 <p>
     @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
